@@ -1,0 +1,8 @@
+brainflow
+numpy
+pandas
+scipy
+joblib
+scikit-learn
+tensorflow
+pynput
