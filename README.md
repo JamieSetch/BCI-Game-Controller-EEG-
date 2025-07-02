@@ -1,7 +1,7 @@
 # EEG-Based Real-Time Brain-Computer Interface for Minecraft Control
 
 This project implements a brain-computer interface (BCI) that processes EEG signals in real time to predict user commands and control Minecraft gameplay via keyboard input. It includes data loading, preprocessing, CNN model training, and live EEG streaming with command execution.
-N.B. This is for an OpenBCI / MAC M1 Setup (not tested on windows or linux)
+N.B. This is for an OpenBCI / Setup (Tested on Mac M1 but not on windows or linux)
 ---
 
 ## Table of Contents
