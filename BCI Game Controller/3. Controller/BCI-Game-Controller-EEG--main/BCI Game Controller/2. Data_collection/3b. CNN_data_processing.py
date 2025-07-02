@@ -7,12 +7,9 @@ import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, BatchNormalization, Flatten, Dense, Dropout, InputLayer
 from tensorflow.keras.utils import to_categorical
-import pickle
 
-# === Adjust this to your actual EEG training data folder ===
-DATA_DIR = os.path.join(os.getcwd(), 'eeg_training_data')
+DATA_DIR = # Adjust path as needed
 
-# === Settings ===
 WINDOW_SIZE = 250
 MAX_FULL_SAMPLE_SIZE = 70000  # max rows to load as single sample
 
@@ -39,9 +36,11 @@ def load_data(data_dir, window_size=WINDOW_SIZE, max_full_sample_size=MAX_FULL_S
         n_rows = data.shape[0]
         
         if n_rows <= max_full_sample_size:
+            # Use whole file as one sample
             X.append(data)
-            y.append(labels[0]) 
+            y.append(labels[0])  # assume label consistent in file
         else:
+            # Split into windows of window_size
             num_windows = n_rows // window_size
             if num_windows == 0:
                 print(f"Warning: {file_name} too short to split, skipping.")
@@ -50,7 +49,7 @@ def load_data(data_dir, window_size=WINDOW_SIZE, max_full_sample_size=MAX_FULL_S
                 start = i * window_size
                 end = start + window_size
                 X.append(data[start:end])
-                y.append(labels[start]) 
+                y.append(labels[start])  # label for window assumed constant
             
     X = np.array(X)
     y = np.array(y)
@@ -60,18 +59,18 @@ def load_data(data_dir, window_size=WINDOW_SIZE, max_full_sample_size=MAX_FULL_S
 def preprocess_data(X, y):
     # Convert to float32
     X = X.astype('float32')
-
-    # Transpose to (samples, channels, window) and add channel dimension
-    X = np.transpose(X, (0, 2, 1))  # (samples, features, window_size)
-    X = np.expand_dims(X, axis=-1)  # (samples, features, window_size, 1)
-
+    
+    # Add channel dimension for Conv2D: (samples, height, width, channels)
+    # height = WINDOW_SIZE (rows), width = number of features (columns)
+    X = np.expand_dims(X, axis=-1)
+    
     # Encode labels as integers
     label_encoder = LabelEncoder()
     y_encoded = label_encoder.fit_transform(y)
-
-    # Convert to categorical (one-hot)
+    
+    # Convert to categorical one-hot vectors
     y_categorical = to_categorical(y_encoded)
-
+    
     return X, y_categorical, label_encoder
 
 def build_cnn_model(input_shape, num_classes):
@@ -106,7 +105,7 @@ if __name__ == '__main__':
     print(f"Data reshaped to {X_processed.shape}")
     print(f"Number of classes: {y_processed.shape[1]}")
 
-    # Train/test split
+    # Split train/test 80/20
     X_train, X_test, y_train, y_test = train_test_split(
         X_processed, y_processed, test_size=0.2, random_state=42, stratify=y_processed
     )
@@ -123,10 +122,3 @@ if __name__ == '__main__':
     print("🧪 Evaluating model...")
     loss, accuracy = model.evaluate(X_test, y_test)
     print(f"Test Loss: {loss:.4f}, Test Accuracy: {accuracy:.4f}")
-
-    # Save model and encoder
-    print("💾 Saving model and label encoder...")
-    model.save('eeg_cnn_model.h5')
-    with open('label_encoder.pkl', 'wb') as f:
-        pickle.dump(label_encoder, f)
-    print("✅ Done.")

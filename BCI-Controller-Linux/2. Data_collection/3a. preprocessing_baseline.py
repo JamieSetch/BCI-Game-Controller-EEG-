@@ -5,13 +5,13 @@ import pandas as pd
 from scipy.signal import butter, filtfilt, welch
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import classification_report
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 import joblib
 
 # === Settings ===
-data_dir = os.path.join(os.getcwd(), 'eeg_training_data') 
-baseline_file = os.path.join(data_dir, 'baseline.csv')
+data_dir = 'eeg_training_data'
+baseline_file = os.path.join(data_dir, 'baseline_eyes_open_recording.csv')  # Default file name
 sample_rate = 250  # Hz
 epoch_length = 250  # 1-second windows (250 samples)
 
@@ -37,7 +37,7 @@ def extract_bandpower_features(epoch, fs):
     features = []
     for ch_data in epoch:
         freqs, psd = welch(ch_data, fs, nperseg=fs)
-        for band, (low, high) in bands.items():
+        for low, high in bands.values():
             idx = np.logical_and(freqs >= low, freqs <= high)
             features.append(np.mean(psd[idx]))
     return features
@@ -68,7 +68,12 @@ file_list = glob.glob(os.path.join(data_dir, 'trial_*.csv'))
 epochs, labels = [], []
 
 for file in file_list:
-    df = pd.read_csv(file)
+    try:
+        df = pd.read_csv(file)
+    except Exception as e:
+        print(f"❌ Could not read {file}: {e}")
+        continue
+
     if df.shape[0] < 34:
         print(f"⚠️ Skipping {file} (only {df.shape[0]} rows — too short)")
         continue
@@ -99,6 +104,10 @@ print(f"\n✅ Processed {len(epochs)} valid epochs from {len(file_list)} trial f
 X = np.array(epochs)
 y = np.array(labels)
 
+# === Encode Labels (if strings) ===
+le = LabelEncoder()
+y = le.fit_transform(y)
+
 # === Standardize Features ===
 scaler = StandardScaler()
 X = scaler.fit_transform(X)
@@ -114,8 +123,13 @@ y_pred = clf.predict(X_test)
 # === Evaluation ===
 print("\n📊 Classification Report:")
 print(classification_report(y_test, y_pred))
+print("✅ Accuracy: %.2f%%" % (accuracy_score(y_test, y_pred) * 100))
+print("🧩 Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
 
 # === Save Model and Scaler ===
-joblib.dump(scaler, os.path.join(os.getcwd(), 'scaler.pkl'))
-joblib.dump(clf, os.path.join(os.getcwd(), 'classifier.pkl'))
-print("\n💾 Model and scaler saved.")
+model_dir = 'saved_models'
+os.makedirs(model_dir, exist_ok=True)
+joblib.dump(scaler, os.path.join(model_dir, 'scaler.pkl'))
+joblib.dump(clf, os.path.join(model_dir, 'classifier.pkl'))
+joblib.dump(le, os.path.join(model_dir, 'label_encoder.pkl'))
+print("\n💾 Model, scaler, and label encoder saved in:", os.path.abspath(model_dir))

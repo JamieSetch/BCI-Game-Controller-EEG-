@@ -7,7 +7,7 @@ from brainflow.board_shim import BoardShim, BrainFlowInputParams, BoardIds
 # === OpenBCI Setup ===
 BoardShim.enable_dev_board_logger()
 params = BrainFlowInputParams()
-params.serial_port = 'COMn'  # 🔧 Change this to your actual OpenBCI COM port
+params.serial_port = # Add your OpenBCI serial port
 board_id = BoardIds.CYTON_BOARD.value
 board = BoardShim(board_id, params)
 board.prepare_session()
@@ -23,8 +23,7 @@ duration = 20             # recording time (seconds)
 num_trials = 5            # trials per number
 pause_message = ">> Press [Enter] to continue to the next trial..."
 
-# ✅ Use safe Windows-compatible directory
-data_dir = os.path.join(os.getcwd(), 'eeg_training_data')
+data_dir = 'eeg_training_data'
 os.makedirs(data_dir, exist_ok=True)
 
 # === Main Trial Loop (Terminal-driven) ===
@@ -44,8 +43,7 @@ try:
             df = pd.DataFrame(eeg_data.T, columns=channel_names)
             df['label'] = number
 
-            # Save path using
-            filename = os.path.join(data_dir, f'trial_{rep+1}_number_{number}.csv')
+            filename = f'{data_dir}/trial_{rep+1}_number_{number}.csv'
             df.to_csv(filename, index=False)
 
             print(f"✅ Trial saved: {filename}")

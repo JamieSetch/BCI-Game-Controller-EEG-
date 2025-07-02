@@ -10,7 +10,7 @@ from sklearn.metrics import classification_report
 import joblib
 
 # === Settings ===
-data_dir = os.path.join(os.getcwd(), 'eeg_training_data') 
+data_dir = 'eeg_training_data'
 baseline_file = os.path.join(data_dir, 'baseline.csv')
 sample_rate = 250  # Hz
 epoch_length = 250  # 1-second windows (250 samples)
@@ -85,7 +85,7 @@ for file in file_list:
     for i in range(0, filtered.shape[1] - epoch_length + 1, epoch_length):
         segment = filtered[:, i:i + epoch_length]
         features = extract_bandpower_features(segment, sample_rate)
-
+        
         # Subtract baseline if available
         if baseline_mean is not None:
             features = np.array(features) - baseline_mean
@@ -116,6 +116,6 @@ print("\n📊 Classification Report:")
 print(classification_report(y_test, y_pred))
 
 # === Save Model and Scaler ===
-joblib.dump(scaler, os.path.join(os.getcwd(), 'scaler.pkl'))
-joblib.dump(clf, os.path.join(os.getcwd(), 'classifier.pkl'))
+joblib.dump(scaler, 'scaler.pkl')
+joblib.dump(clf, 'classifier.pkl')
 print("\n💾 Model and scaler saved.")

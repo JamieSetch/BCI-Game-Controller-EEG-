@@ -8,14 +8,14 @@ import os
 BoardShim.enable_dev_board_logger()
 
 params = BrainFlowInputParams()
-params.serial_port = 'COMn'  # 🔧 Change this to your actual OpenBCI COM port (e.g., 'COM4', 'COM5')
+params.serial_port =  # Add your OpenBCI serial port
 board_id = BoardIds.CYTON_BOARD.value
 
 board = BoardShim(board_id, params)
 board.prepare_session()
 
 # === Output Directory ===
-data_dir = os.path.join(os.getcwd(), 'eeg_training_data')  
+data_dir = 'eeg_training_data'
 os.makedirs(data_dir, exist_ok=True)
 
 # === Start Stream ===
@@ -38,7 +38,7 @@ eeg_data = data[eeg_channels, :]
 df = pd.DataFrame(eeg_data.T, columns=channel_names)
 df['label'] = 'Baseline_EyesOpen'
 
-baseline_file = os.path.join(data_dir, 'baseline_eyes_open_recording.csv')
+baseline_file = f'{data_dir}/baseline_eyes_open_recording.csv'
 df.to_csv(baseline_file, index=False)
 
 print("\n✅ Baseline recording complete. File saved to:", os.path.abspath(baseline_file))
