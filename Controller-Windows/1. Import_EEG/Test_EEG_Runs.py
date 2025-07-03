@@ -5,7 +5,7 @@ from brainflow.board_shim import BoardShim, BrainFlowInputParams, BoardIds
 # Set up BrainFlow
 BoardShim.enable_dev_board_logger()
 params = BrainFlowInputParams()
-params.serial_port = COM#n - add input for your OpenBCI dongle
+params.serial_port = COMn # - add input for your OpenBCI dongle
 
 board = BoardShim(BoardIds.CYTON_BOARD.value, params)
 eeg_channels = BoardShim.get_eeg_channels(BoardIds.CYTON_BOARD.value)
